@@ -2,7 +2,7 @@
 An implementation of computational geometry algorithms in Python3.
 
 ## Contents
-This module contains implementations for computational geometry algorithms based upon Franco P. Preparata and Michael I. Shamos' book "Computational Geometry: An Introduction". These algorithms are subdivided into three topics: geometric searching, constructing convex hulls, and proximity problems.
+This library contains implementations for computational geometry algorithms based upon Franco P. Preparata and Michael I. Shamos' book "Computational Geometry: An Introduction". These algorithms are subdivided into three topics: geometric searching, constructing convex hulls, and proximity problems.
 #### Geometric searching
 * Point location
   * *Slab method **(TBD)***: locate a point in a planar graph between its two edges.
