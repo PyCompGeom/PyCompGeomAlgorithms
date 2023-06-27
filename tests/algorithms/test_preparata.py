@@ -20,6 +20,7 @@ def test_preparata1():
     assert next(ans) == (hulls, trees)
     assert next(ans) == hull
 
+
 def test_preparata2():
     # Corner case for convex (>--X) where one of the angles is equal to pi
     points = [Point(2, 2), Point(0, 1), Point(4, 3), Point(1, 0)]
@@ -58,6 +59,7 @@ def test_preparata3():
     assert next(ans) == deleted_points
     assert next(ans) == (hulls, trees)
     assert next(ans) == hull
+
 
 def test_preparata4():
     # Corner cases for collinear first points and left and right supporting where one of the angles is 0

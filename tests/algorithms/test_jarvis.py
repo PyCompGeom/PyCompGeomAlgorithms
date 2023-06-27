@@ -18,6 +18,7 @@ def test_jarvis1():
     ans = jarvis(pts)
     assert ans == hull
 
+
 def test_jarvis2():
     pts = [Point(3, 3), Point(1, 1), Point(5, 0)]
     hull = [Point(1, 1), Point(3, 3), Point(5, 0)]
