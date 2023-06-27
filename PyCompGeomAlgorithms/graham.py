@@ -22,7 +22,13 @@ def graham(points):
         steps_table = []
         hull = make_hull(steps_table, ordered_points)
         ordered_points.pop()
-        yield steps_table
+        
+        yield [row[0] for row in steps_table] # point triples
+        yield [row[1] for row in steps_table] # whether angles are <pi
+        yield
+        yield
+        yield
+        
         yield hull
 
 
@@ -38,22 +44,21 @@ def sort_points(points, centroid, origin):
 
 
 def make_hull(steps_table, ordered_points):
-    ans = ordered_points[:2]
-    for p in ordered_points[2:]:
-        while len(ans) > 1 and Point.direction(ans[-2], ans[-1], p) >= 0:
-            steps_table.append(current_step(ans, False, p))
-            ans.pop()
+    res = ordered_points[:2]
 
-        if len(ans) > 1:
-            steps_table.append(current_step(ans, True, p))
-        ans.append(p)
+    for point in ordered_points[2:]:
+        while len(res) > 1 and Point.direction(res[-2], res[-1], point) >= 0:
+            steps_table.append(steps_table_row(res, False, point))
+            res.pop()
 
-    return ans[:-1]
+        if len(res) > 1:
+            steps_table.append(steps_table_row(res, True, point))
+        
+        res.append(point)
 
-
-def current_step(ans, add, p):
-    """Current step: current points' triple, add/delete, point to add/delete."""
-    return [ans[-2], ans[-1], p], add
+    return res[:-1]
 
 
-print(next(graham([Point(1,1), Point(2,2)])))
+def steps_table_row(points, adding, new_point):
+    """Current step: current points' triple, whether to add/delete, and point to add/delete."""
+    return (points[-2], points[-1], new_point), adding
