@@ -40,8 +40,12 @@ def quickhull(points):
     )
     tree.root.subhull = hull
 
-    yield leftmost_point, rightmost_point, subset1, subset2, tree
+    yield leftmost_point, rightmost_point, subset1, subset2
     yield tree
+    yield tree
+    yield tree
+    yield tree
+
     yield hull
 
 

@@ -12,10 +12,13 @@ def test_quickhull1():
     tree.root.left.right = QuickhullNode([pts[0], pts[2]], subhull=[pts[0], pts[2]])
 
     ans = quickhull(pts)
-    lp, rp, s1, s2, _ = next(ans)
+    lp, rp, s1, s2 = next(ans)
     
     assert (lp, rp) == (pts[1], pts[2])
     assert (s1, s2) == ([pts[1], pts[0], pts[2]], [pts[2], pts[1]])
+    assert next(ans) == tree
+    assert next(ans) == tree
+    assert next(ans) == tree
     assert next(ans) == tree
     assert next(ans) == hull
 
@@ -82,9 +85,12 @@ def test_quickhull2():
     tree.root.right.right.right = QuickhullNode([pts[5], pts[0]], subhull=[pts[5], pts[0]])
 
     ans = quickhull(pts)
-    lp, rp, s1, s2, _ = next(ans)
+    lp, rp, s1, s2 = next(ans)
 
     assert (lp, rp) == (pts[0], pts[8])
     assert (s1, s2) == (tree.root.left.points, tree.root.right.points)
+    assert next(ans) == tree
+    assert next(ans) == tree
+    assert next(ans) == tree
     assert next(ans) == tree
     assert next(ans) == hull
