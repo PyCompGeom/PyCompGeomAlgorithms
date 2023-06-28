@@ -2,6 +2,32 @@ from math import pi
 from .core import Point
 
 
+class GrahamStepsTableRow:
+    def __init__(self, point_triple, is_angle_less_than_pi):
+        self.point_triple = point_triple
+        self.is_angle_less_than_pi = is_angle_less_than_pi
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, self.__class__) and
+            self.point_triple == other.point_triple and
+            self.is_angle_less_than_pi == other.is_angle_less_than_pi
+        )
+
+
+class GrahamStepsTable(list):
+    def __init__(self, ordered_points):
+        self.ordered_points = ordered_points
+        super().__init__()
+    
+    def __eq__(self, other):
+        return (
+            isinstance(other, self.__class__) and
+            self.ordered_points == other.ordered_points and
+            super().__eq__(other)
+        )
+
+
 def graham(points):
     if len(points) < 3:
         yield sorted(points, key=lambda p: (p.y, -p.x))
@@ -19,12 +45,12 @@ def graham(points):
         yield origin
 
         ordered_points.append(origin)
-        steps_table = []
+        steps_table = GrahamStepsTable(ordered_points)
         hull = make_hull(steps_table, ordered_points)
         ordered_points.pop()
         
-        yield [row[0] for row in steps_table] # point triples
-        yield [row[1] for row in steps_table] # whether angles are <pi
+        yield [row.point_triple for row in steps_table]
+        yield [row.is_angle_less_than_pi for row in steps_table]
         yield
         yield
         yield
@@ -48,17 +74,17 @@ def make_hull(steps_table, ordered_points):
 
     for point in ordered_points[2:]:
         while len(res) > 1 and Point.direction(res[-2], res[-1], point) >= 0:
-            steps_table.append(steps_table_row(res, False, point))
+            steps_table.append(steps_table_row(res, point, False))
             res.pop()
 
         if len(res) > 1:
-            steps_table.append(steps_table_row(res, True, point))
+            steps_table.append(steps_table_row(res, point, True))
         
         res.append(point)
 
     return res[:-1]
 
 
-def steps_table_row(points, adding, new_point):
-    """Current step: current points' triple, whether to add/delete, and point to add/delete."""
-    return (points[-2], points[-1], new_point), adding
+def steps_table_row(points, new_point, is_angle_less_than_pi):
+    """Current step: current points' triple, whether angle < pi."""
+    return GrahamStepsTableRow((points[-2], points[-1], new_point), is_angle_less_than_pi)
