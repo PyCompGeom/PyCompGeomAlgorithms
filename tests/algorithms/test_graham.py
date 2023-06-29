@@ -1,6 +1,6 @@
 from math import isclose
 from PyCompGeomAlgorithms.core import Point
-from PyCompGeomAlgorithms.graham import graham
+from PyCompGeomAlgorithms.graham import graham, GrahamStepsTable, GrahamStepsTableRow
 
 
 def test_graham1():
@@ -8,11 +8,19 @@ def test_graham1():
     centroid = Point(3.3333333333333335, 1.0)
     ordered = [Point(7, 0), Point(3, 3), Point(0, 0)]
     origin = Point(7, 0)
+
     triples = [
         (ordered[0], ordered[1], ordered[2]),
         (ordered[1], ordered[2], ordered[0])
     ]
     are_angles_less_than_pi = [True, True]
+
+    steps_table = GrahamStepsTable(ordered)
+    steps_table.extend(
+        GrahamStepsTableRow(triple, is_angle_lt_pi)
+        for triple, is_angle_lt_pi in zip(triples, are_angles_less_than_pi)
+    )
+    
     hull = [Point(7, 0), Point(3, 3), Point(0, 0)]
     
     ans = graham(pts)
@@ -23,9 +31,9 @@ def test_graham1():
     assert next(ans) == triples
     assert next(ans) == are_angles_less_than_pi
 
-    assert next(ans) is None
-    assert next(ans) is None
-    assert next(ans) is None
+    assert next(ans) == steps_table
+    assert next(ans) == steps_table
+    assert next(ans) == steps_table
     
     assert next(ans) == hull
 
@@ -75,6 +83,13 @@ def test_graham2():
         (ordered[7], ordered[8], ordered[0])
     ]
     are_angles_less_than_pi = [False, True, True, True, False, True, True, True, True, False, True, False, True]
+    
+    steps_table = GrahamStepsTable(ordered)
+    steps_table.extend(
+        GrahamStepsTableRow(triple, is_angle_lt_pi)
+        for triple, is_angle_lt_pi in zip(triples, are_angles_less_than_pi)
+    )
+    
     hull = [
         Point(5, 0),
         Point(10, 3),
@@ -93,9 +108,9 @@ def test_graham2():
     assert next(ans) == triples
     assert next(ans) == are_angles_less_than_pi
 
-    assert next(ans) is None
-    assert next(ans) is None
-    assert next(ans) is None
+    assert next(ans) == steps_table
+    assert next(ans) == steps_table
+    assert next(ans) == steps_table
     
     assert next(ans) == hull
 
@@ -142,6 +157,13 @@ def test_graham3():
         (ordered[7], ordered[8], ordered[0])
     ]
     are_angles_less_than_pi = [False, True, True, False, False, True, True, True, True, True, False, True]
+    
+    steps_table = GrahamStepsTable(ordered)
+    steps_table.extend(
+        GrahamStepsTableRow(triple, is_angle_lt_pi)
+        for triple, is_angle_lt_pi in zip(triples, are_angles_less_than_pi)
+    )
+
     hull = [
         Point(8, 2),
         Point(11, 5),
@@ -159,8 +181,8 @@ def test_graham3():
     assert next(ans) == triples
     assert next(ans) == are_angles_less_than_pi
 
-    assert next(ans) is None
-    assert next(ans) is None
-    assert next(ans) is None
+    assert next(ans) == steps_table
+    assert next(ans) == steps_table
+    assert next(ans) == steps_table
     
     assert next(ans) == hull

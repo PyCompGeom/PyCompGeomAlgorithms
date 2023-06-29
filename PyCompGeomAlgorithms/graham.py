@@ -63,9 +63,9 @@ def graham(points):
         
         yield [row.point_triple for row in steps_table]
         yield [row.is_angle_less_than_pi for row in steps_table]
-        yield
-        yield
-        yield
+        yield steps_table
+        yield steps_table
+        yield steps_table
         
         yield hull
 
