@@ -13,12 +13,18 @@ class GrahamStepsTableRow:
             self.point_triple == other.point_triple and
             self.is_angle_less_than_pi == other.is_angle_less_than_pi
         )
+    
+    def __str__(self):
+        return f"[{str(self.point_triple)}, {str(self.is_angle_less_than_pi)}]"
+    
+    def __repr__(self):
+        return str(self)
 
 
 class GrahamStepsTable(list):
     def __init__(self, ordered_points):
-        self.ordered_points = ordered_points
         super().__init__()
+        self.ordered_points = ordered_points
     
     def __eq__(self, other):
         return (
@@ -26,6 +32,12 @@ class GrahamStepsTable(list):
             self.ordered_points == other.ordered_points and
             super().__eq__(other)
         )
+    
+    def __str__(self):
+        return f"[{', '.join(str(row) for row in self)}]"
+    
+    def __repr__(self):
+        return str(self)
 
 
 def graham(points):
@@ -74,17 +86,12 @@ def make_hull(steps_table, ordered_points):
 
     for point in ordered_points[2:]:
         while len(res) > 1 and Point.direction(res[-2], res[-1], point) >= 0:
-            steps_table.append(steps_table_row(res, point, False))
+            steps_table.append(GrahamStepsTableRow((res[-2], res[-1], point), False))
             res.pop()
 
         if len(res) > 1:
-            steps_table.append(steps_table_row(res, point, True))
+            steps_table.append(GrahamStepsTableRow((res[-2], res[-1], point), True))
         
         res.append(point)
 
     return res[:-1]
-
-
-def steps_table_row(points, new_point, is_angle_less_than_pi):
-    """Current step: current points' triple, whether angle < pi."""
-    return GrahamStepsTableRow((points[-2], points[-1], new_point), is_angle_less_than_pi)
