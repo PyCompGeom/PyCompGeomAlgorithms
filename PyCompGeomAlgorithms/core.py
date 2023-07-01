@@ -208,7 +208,6 @@ class Line2D:
         return -inf if self.b == 0 else -self.c / self.b
 
 
-
 class BinTreeNode:
     def __init__(self, data, left=None, right=None):
         self.data = data
@@ -219,6 +218,21 @@ class BinTreeNode:
     def is_leaf(self):
         return self.left is None and self.right is None
     
+    def traverse_preorder(self, node=None, nodes=None):
+        if node is None:
+            node = self
+        if nodes is None:
+            nodes = []
+        
+        nodes.append(node)
+
+        if node.left:
+            self.traverse_preorder(node.left, nodes)
+        if node.right:
+            self.traverse_preorder(node.right, nodes)
+        
+        return nodes
+
     def traverse_inorder(self, node=None, nodes=None):
         if node is None:
             node = self
@@ -234,7 +248,21 @@ class BinTreeNode:
             self.traverse_inorder(node.right, nodes)
         
         return nodes
-    
+
+    def traverse_postorder(self, node=None, nodes=None):
+        if node is None:
+            node = self
+        if nodes is None:
+            nodes = []
+        
+        if node.left:
+            self.traverse_postorder(node.left, nodes)
+        if node.right:
+            self.traverse_postorder(node.right, nodes)
+        
+        nodes.append(node)
+        return nodes
+
     def __eq__(self, other):
         return (
             isinstance(other, self.__class__)
@@ -268,8 +296,14 @@ class BinTree:
 
         return node
     
+    def traverse_preorder(self):
+        return self.root.traverse_preorder()
+
     def traverse_inorder(self):
         return self.root.traverse_inorder()
+    
+    def traverse_postorder(self):
+        return self.root.traverse_postorder()
     
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.root == other.root
