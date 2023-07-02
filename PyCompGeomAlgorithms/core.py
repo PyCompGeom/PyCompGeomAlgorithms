@@ -310,8 +310,8 @@ class BinTree:
 
 
 class ThreadedBinTreeNode(BinTreeNode):
-    def __init__(self, data):
-        super().__init__(data)
+    def __init__(self, data, left=None, right=None):
+        super().__init__(data, left, right)
         self.prev = None
         self.next = None
     
