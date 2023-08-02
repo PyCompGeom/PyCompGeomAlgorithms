@@ -1,8 +1,8 @@
-from .core import Node, BinTree, ThreadedBinTree, ThreadedBinTreeNode, PointType, Point
+from .core import BinTreeNode, BinTree, ThreadedBinTree, ThreadedBinTreeNode, PointType, Point
 from .jarvis import jarvis
 
 
-class DynamicHullNode(Node):
+class DynamicHullNode(BinTreeNode):
     def __init__(self, data, subhull=None, left_supporting_index=0):
         super().__init__(data)
         self.subhull = subhull
@@ -65,9 +65,9 @@ def upper_dynamic_hull(points, point_to_insert_or_delete):
     # yield tree
 
     if point_to_insert_or_delete in points:
-        delete_point(point, tree)
+        delete_point(point_to_insert_or_delete, tree)
     else:
-        insert_point(point, tree)
+        insert_point(point_to_insert_or_delete, tree)
 
     return [n.point for n in tree.root.subhull.traverse_inorder()]
 
@@ -174,12 +174,16 @@ def optimize_dynamic_hull_tree(node, parent_node=None):
     
 
 def optimize_subhull(node, parent_node):
-    node_points = node.subhull.traverse_inorder()
-    parent_points = set(parent_node.subhull.traverse_inorder())
+    node_points = [n.point for n in node.subhull.traverse_inorder()]
+    parent_points = {n.point for n in parent_node.subhull.traverse_inorder()}
 
     filtered_points = [p for p in node_points if p not in parent_points]
     node.subhull = SubHullThreadedBinTree.from_iterable(filtered_points)
 
 
 def insert_point(point, tree):
+    pass
+
+
+def delete_point(point, tree):
     pass

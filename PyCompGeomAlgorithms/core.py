@@ -209,10 +209,11 @@ class Line2D:
 
 
 class BinTreeNode:
-    def __init__(self, data, left=None, right=None):
+    def __init__(self, data, left=None, right=None, height=0):
         self.data = data
         self.left = left
         self.right = right
+        self.height = height
     
     @property
     def is_leaf(self):
@@ -280,7 +281,7 @@ class BinTree:
     
     @classmethod
     def from_iterable(cls, iterable):
-        return cls(cls._from_iterable(iterable))
+        return cls(cls._from_iterable(iterable)) if iterable else cls(None)
     
     @classmethod
     def _from_iterable(cls, iterable, left=0, right=None):
@@ -293,17 +294,21 @@ class BinTree:
         node = cls.node_class(iterable[mid])
         node.left = cls._from_iterable(iterable, left, mid-1)
         node.right = cls._from_iterable(iterable, mid+1, right)
+        
+        left_height = node.left.height if node.left else 0
+        right_height = node.right.height if node.right else 0
+        node.height = max(left_height, right_height) + 1 if node.left or node.right else 0 
 
         return node
     
     def traverse_preorder(self):
-        return self.root.traverse_preorder()
+        return self.root.traverse_preorder() if self.root else []
 
     def traverse_inorder(self):
-        return self.root.traverse_inorder()
+        return self.root.traverse_inorder() if self.root else []
     
     def traverse_postorder(self):
-        return self.root.traverse_postorder()
+        return self.root.traverse_postorder() if self.root else []
     
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.root == other.root
@@ -331,7 +336,7 @@ class ThreadedBinTree(BinTree):
             node.prev = node.left if node.left else nodes[i-1]
             node.next = node.right if node.right else nodes[(i+1)%len(nodes)]
         
-        if not circular:
+        if not circular and nodes:
             nodes[0].prev = None
             nodes[-1].next = None
         

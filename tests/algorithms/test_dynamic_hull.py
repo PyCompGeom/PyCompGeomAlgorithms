@@ -2,14 +2,14 @@ from PyCompGeomAlgorithms.core import Point
 from PyCompGeomAlgorithms.dynamic_hull import DynamicHullNode, SubHullThreadedBinTree, upper_dynamic_hull, merge
 
 
-def test_dynamic_hull1(self):
+def test_dynamic_hull1():
     pts = [Point(3, 3), Point(1, 1), Point(5, 0)]
     hull = [Point(1, 1), Point(3, 3), Point(5, 0)]
 
-    self.assertEqual(hull, upper_dynamic_hull(pts, None))
+    assert hull == upper_dynamic_hull(pts, None)
 
 
-def test_dynamic_hull2(self):
+def test_dynamic_hull2():
     pts = [
         Point(3, 10),
         Point(6, 8),
@@ -32,105 +32,117 @@ def test_dynamic_hull2(self):
         Point(10, 3)
     ]
     
-    self.assertEqual(hull, upper_dynamic_hull(pts, None))
+    assert hull == upper_dynamic_hull(pts, None)
 
 
-def test_dynamic_hull3(self):
+def test_dynamic_hull3():
     pts = [Point(0, 2), Point(0, 4)]
     hull = [Point(0, 4)]
 
-    self.assertEqual(hull, upper_dynamic_hull(pts, None))
+    assert hull == upper_dynamic_hull(pts, None)
 
 
-def test_dynamic_hull4(self):
+def test_dynamic_hull4():
     """Vertical line, only upper point"""
     pts = [Point(0, i) for i in range(5)]
     hull = [Point(0, 4)]
 
-    self.assertEqual(hull, upper_dynamic_hull(pts, None))
+    assert hull == upper_dynamic_hull(pts, None)
 
 
-def test_dynamic_hull5(self):
+def test_dynamic_hull5():
     """Horizontal line, segment of only extreme left and right points"""
     pts = [Point(i, 0) for i in range(5)]
     hull = [Point(0, 0), Point(4, 0)]
 
-    self.assertEqual(hull, upper_dynamic_hull(pts, None))
+    assert hull == upper_dynamic_hull(pts, None)
 
 
-def test_merge_segments1(self):
+def make_two_segment_nodes(points):
+    p1, p2, p3, p4 = points
+    n1, n2, n3, n4 = [DynamicHullNode(p, SubHullThreadedBinTree.from_iterable([p])) for p in points]
+
+    segment_node1 = DynamicHullNode(p1, SubHullThreadedBinTree.from_iterable([p1, p2]))
+    segment_node1.left, segment_node1.right = n1, n2
+    segment_node2 = DynamicHullNode(p3, SubHullThreadedBinTree.from_iterable([p3, p4]))
+    segment_node2.left, segment_node2.right = n3, n4
+    
+    return segment_node1, segment_node2
+
+
+def test_merge_segments1():
     """Hull is p1-p4"""
     pts = [Point(0, 2), Point(1, 0), Point(3, 1), Point(4, 3)]
     p1, p2, p3, p4 = pts
 
-    segment_node1, segment_node2 = self._make_two_segment_nodes(pts)
+    segment_node1, segment_node2 = make_two_segment_nodes(pts)
     joint_node = DynamicHullNode(p2, SubHullThreadedBinTree.from_iterable([p1, p4]))
     joint_node.left, joint_node.right = segment_node1, segment_node2
 
-    self.assertEqual(joint_node, merge(segment_node1, segment_node2))
+    assert joint_node == merge(segment_node1, segment_node2)
 
 
-def test_merge_segments2(self):
+def test_merge_segments2():
     """Hull is p1-p2-p4, p3 is below p1-p4"""
     pts = [Point(1, 1), Point(2, 4), Point(3, 1), Point(4, 2)]
     p1, p2, p3, p4 = pts
 
-    segment_node1, segment_node2 = self._make_two_segment_nodes(pts)
+    segment_node1, segment_node2 = make_two_segment_nodes(pts)
     joint_node = DynamicHullNode(p2, SubHullThreadedBinTree.from_iterable([p1, p2, p4]), 1)
     joint_node.left, joint_node.right = segment_node1, segment_node2
 
-    self.assertEqual(joint_node, merge(segment_node1, segment_node2))
+    assert joint_node == merge(segment_node1, segment_node2)
 
 
-def test_merge_segments3(self):
+def test_merge_segments3():
     """Hull is p1-p2-p4, p3 is above p1-p4"""
     pts = [Point(1, 1), Point(2, 4), Point(3, 2), Point(4, 2)]
     p1, p2, p3, p4 = pts
 
-    segment_node1, segment_node2 = self._make_two_segment_nodes(pts)
+    segment_node1, segment_node2 = make_two_segment_nodes(pts)
     joint_node = DynamicHullNode(p2, SubHullThreadedBinTree.from_iterable([p1, p2, p4]), 1)
     joint_node.left, joint_node.right = segment_node1, segment_node2
 
-    self.assertEqual(joint_node, merge(segment_node1, segment_node2))
+    assert joint_node == merge(segment_node1, segment_node2)
 
 
-def test_merge_segments4(self):
+def test_merge_segments4():
     """Hull is p1-p3-p4, p2 is below p1-p4"""
     pts = [Point(1, 3), Point(2, 1), Point(3, 3), Point(4, 1)]
     p1, p2, p3, p4 = pts
 
-    segment_node1, segment_node2 = self._make_two_segment_nodes(pts)
+    segment_node1, segment_node2 = make_two_segment_nodes(pts)
     joint_node = DynamicHullNode(p2, SubHullThreadedBinTree.from_iterable([p1, p3, p4]))
     joint_node.left, joint_node.right = segment_node1, segment_node2
 
-    self.assertEqual(joint_node, merge(segment_node1, segment_node2))
+    assert joint_node == merge(segment_node1, segment_node2)
 
 
-def test_merge_segments5(self):
+def test_merge_segments5():
     """Hull is p1-p3-p4, p2 is above p1-p4"""
     pts = [Point(1, 3), Point(2, 3), Point(3, 4), Point(4, 1)]
     p1, p2, p3, p4 = pts
 
-    segment_node1, segment_node2 = self._make_two_segment_nodes(pts)
+    segment_node1, segment_node2 = make_two_segment_nodes(pts)
     joint_node = DynamicHullNode(p2, SubHullThreadedBinTree.from_iterable([p1, p3, p4]))
     joint_node.left, joint_node.right = segment_node1, segment_node2
 
-    self.assertEqual(joint_node, merge(segment_node1, segment_node2))
+    assert joint_node == merge(segment_node1, segment_node2)
 
 
-def test_merge_segments6(self):
+def test_merge_segments6():
     """Hull is p1-p2-p3-p4"""
     pts = [Point(1, 1), Point(2, 3), Point(3, 3), Point(4, 1)]
     p1, p2, p3, p4 = pts
 
-    segment_node1, segment_node2 = self._make_two_segment_nodes(pts)
+    segment_node1, segment_node2 = make_two_segment_nodes(pts)
     joint_node = DynamicHullNode(p2, SubHullThreadedBinTree.from_iterable([p1, p2, p3, p4]), 1)
     joint_node.left, joint_node.right = segment_node1, segment_node2
 
-    self.assertEqual(joint_node, merge(segment_node1, segment_node2))
+    assert joint_node == merge(segment_node1, segment_node2)
 
 
-def test_merge_segment_and_point1(self):
+def test_merge_segment_and_point1():
     """Segment p1-p2 and point p3, where p2 is above p1-p3."""
     pts = [Point(0, 1), Point(2, 0), Point(5, 5)]
     p1, p2, p3 = pts
@@ -142,10 +154,10 @@ def test_merge_segment_and_point1(self):
     joint_node = DynamicHullNode(p2, SubHullThreadedBinTree.from_iterable([p1, p3]))
     joint_node.left, joint_node.right = segment_node, n3
 
-    self.assertEqual(joint_node, merge(segment_node, point_node))
+    assert joint_node == merge(segment_node, point_node)
 
 
-def test_merge_segment_and_point2(self):
+def test_merge_segment_and_point2():
     """Segment p1-p2 and point p3, where p2 is above p1-p3."""
     pts = [Point(0, 1), Point(2, 3), Point(5, 0)]
     p1, p2, p3 = pts
@@ -157,16 +169,4 @@ def test_merge_segment_and_point2(self):
     joint_node = DynamicHullNode(p2, SubHullThreadedBinTree.from_iterable([p1, p2, p3]), 1)
     joint_node.left, joint_node.right = segment_node, n3
 
-    self.assertEqual(joint_node, merge(segment_node, point_node))
-
-
-def _make_two_segment_nodes(self, points):
-    p1, p2, p3, p4 = points
-    n1, n2, n3, n4 = [DynamicHullNode(p, SubHullThreadedBinTree.from_iterable([p])) for p in points]
-
-    segment_node1 = DynamicHullNode(p1, SubHullThreadedBinTree.from_iterable([p1, p2]))
-    segment_node1.left, segment_node1.right = n1, n2
-    segment_node2 = DynamicHullNode(p3, SubHullThreadedBinTree.from_iterable([p3, p4]))
-    segment_node2.left, segment_node2.right = n3, n4
-    
-    return segment_node1, segment_node2
+    assert joint_node == merge(segment_node, point_node)
