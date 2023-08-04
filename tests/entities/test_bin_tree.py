@@ -2,7 +2,7 @@ from PyCompGeomAlgorithms.core import BinTree
 
 
 def test_bin_tree_height():
-    tree = BinTree.from_iterable([1, 2, 3, 4, 5, 6])
+    tree = BinTree.from_iterable(i for i in range(1, 7))
     assert tree.root.height == 2
     assert tree.root.left.height == 1
     assert tree.root.left.right.height == 0

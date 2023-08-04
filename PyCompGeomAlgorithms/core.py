@@ -1,6 +1,6 @@
 from enum import Enum
 from math import inf, pi, acos, atan2, isclose
-from typing import Iterable
+from typing import Iterable, Generator
 
 
 class Vector:
@@ -301,6 +301,9 @@ class BinTree:
     
     @classmethod
     def from_iterable(cls, iterable):
+        if isinstance(iterable, Generator):
+            iterable = list(iterable)
+        
         return cls(cls._from_iterable(iterable)) if iterable else cls(None)
     
     @classmethod
