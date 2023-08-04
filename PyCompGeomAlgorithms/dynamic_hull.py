@@ -21,14 +21,6 @@ class DynamicHullNode(BinTreeNode):
         root = self.subhull.root
         return not root.left and root.right and root.right.is_leaf
     
-    @property
-    def rightmost_node(self):
-        res = self
-        while res.right:
-            res = res.right
-        
-        return res
-    
     def __eq__(self, other):
         return (
             super().__eq__(other)

@@ -219,6 +219,26 @@ class BinTreeNode:
     def is_leaf(self):
         return self.left is None and self.right is None
     
+    @property
+    def leftmost_node(self):
+        res = self
+        while res.left:
+            res = res.left
+        
+        return res
+
+    @property
+    def rightmost_node(self):
+        res = self
+        while res.right:
+            res = res.right
+        
+        return res
+    
+    @property
+    def balance_factor(self):
+        return (self.right.height if self.right else 0) - (self.left.height if self.left else 0)
+    
     def traverse_preorder(self, node=None, nodes=None):
         if node is None:
             node = self
@@ -341,6 +361,96 @@ class ThreadedBinTree(BinTree):
             nodes[-1].next = None
         
         return tree
+
+
+class AVLTree(BinTree):
+    def insert(self, data):
+        self.root = self._insert(data, self.root)
+    
+    def delete(self, data):
+        self.root = self._delete(data, self.root)
+
+    def _insert(self, data, node=None):
+        if node is None:
+            return BinTreeNode(data)
+        
+        if data < node.data:
+            node.left = self._insert(data, node.left)
+        else:
+            node.right = self._insert(data, node.right)
+        
+        self._set_height(node)
+        return self._rebalance(node)
+
+    def _delete(self, data, node):
+        if node is None:
+            return None
+        
+        if data < node.data:
+            node.left = self._delete(data, node.left)
+        elif data > node.data:
+            node.right = self._delete(data, node.right)
+        else:
+            if not node.left or not node.right:
+                child = node.left if node.left else node.right
+                node = None
+                return child
+            
+            inorder_successor = node.right.leftmost_node
+            node.data = inorder_successor.data
+            node.right = self._delete(inorder_successor.data, node.right)
+
+        if node is None:
+            return None
+
+        self._set_height(node)
+        return self._rebalance(node)
+    
+    def _rebalance(self, node):
+        balance_factor = node.balance_factor
+
+        if balance_factor == -2:
+            if node.left.balance_factor == 1:
+                node.left = self._rotate_left(node.left)
+                return self._rotate_right(node)
+            
+            return self._rotate_right(node)
+        if balance_factor == 2:
+            if node.right.balance_factor == -1:
+                node.right = self._rotate_right(node.right)
+                return self._rotate_left(node)
+
+            return self._rotate_left(node)
+        
+        # No imbalance
+        return node
+
+    def _rotate_left(self, node):
+        heavy_node = node.right
+        swapped_subnode = heavy_node.left
+        heavy_node.left = node
+        node.right = swapped_subnode
+
+        self._set_height(node)
+        self._set_height(heavy_node)
+
+        return heavy_node
+    
+    def _rotate_right(self, node):
+        heavy_node = node.left
+        swapped_subnode = heavy_node.right
+        heavy_node.right = node
+        node.left = swapped_subnode
+
+        self._set_height(node)
+        self._set_height(heavy_node)
+
+        return heavy_node
+
+    def _set_height(self, node):
+        left_height = node.left.height if node.left else 0
+        right_height = node.right.height if node.right else 0
+        node.height = max(left_height, right_height) + 1 if node.left or node.right else 0
 
 
 class PointType(Enum):
