@@ -363,25 +363,6 @@ class ThreadedBinTreeNode(BinTreeNode):
         return f"{self.left.data if self.left else ''}<-{self.data}->{self.right.data if self.right else ''}"
 
 
-class ThreadedBinTree(BinTree):
-    node_class = ThreadedBinTreeNode
-
-    @classmethod
-    def from_iterable(cls, iterable, circular=True):
-        tree = super().from_iterable(iterable)
-        nodes = tree.traverse_inorder()
-        
-        for i, node in enumerate(nodes):            
-            node.prev = node.left if node.left else nodes[i-1]
-            node.next = node.right if node.right else nodes[(i+1)%len(nodes)]
-        
-        if not circular and nodes:
-            nodes[0].prev = None
-            nodes[-1].next = None
-        
-        return tree
-
-
 class AVLTree(BinTree):
     def insert(self, data):
         self.root = self._insert(data, self.root)
@@ -473,6 +454,25 @@ class AVLTree(BinTree):
         left_height = node.left.height if node.left else 0
         right_height = node.right.height if node.right else 0
         node.height = max(left_height, right_height) + 1 if node.left or node.right else 0
+
+
+class ThreadedBinTree(AVLTree):
+    node_class = ThreadedBinTreeNode
+
+    @classmethod
+    def from_iterable(cls, iterable, circular=True):
+        tree = super().from_iterable(iterable)
+        nodes = tree.traverse_inorder()
+        
+        for i, node in enumerate(nodes):            
+            node.prev = node.left if node.left else nodes[i-1]
+            node.next = node.right if node.right else nodes[(i+1)%len(nodes)]
+        
+        if not circular and nodes:
+            nodes[0].prev = None
+            nodes[-1].next = None
+        
+        return tree
 
 
 class PointType(Enum):
