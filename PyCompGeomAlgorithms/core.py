@@ -239,6 +239,22 @@ class BinTreeNode:
     def balance_factor(self):
         return (self.right.height if self.right else 0) - (self.left.height if self.left else 0)
     
+    @classmethod
+    def copy_contents_without_children(cls, source, destination):
+        if not isinstance(source, cls) or not isinstance(destination, cls):
+            raise TypeError(f"operands must be of type {cls}")
+        if source is destination:
+            return
+
+        tmp_source_left, tmp_source_right = source.left, source.right
+        tmp_dest_left, tmp_dest_right = destination.left, destination.right
+        
+        source.left, source.right = None, None
+        destination.__dict__.update(source.__dict__)
+
+        source.left, source.right = tmp_source_left, tmp_source_right
+        destination.left, destination.right = tmp_dest_left, tmp_dest_right
+
     def traverse_preorder(self, node=None, nodes=None):
         if node is None:
             node = self
@@ -374,10 +390,12 @@ class AVLTree(BinTree):
         self.root = self._delete(data, self.root)
 
     def _insert(self, data, node=None):
+        data_is_node = isinstance(data, self.node_class)
         if node is None:
-            return BinTreeNode(data)
+            return data if data_is_node else BinTreeNode(data)
         
-        if data < node.data:
+        value = data.data if data_is_node else data
+        if value < node.data:
             node.left = self._insert(data, node.left)
         else:
             node.right = self._insert(data, node.right)
@@ -400,7 +418,8 @@ class AVLTree(BinTree):
                 return child
             
             inorder_successor = node.right.leftmost_node
-            node.data = inorder_successor.data
+            BinTreeNode.copy_contents_without_children(inorder_successor, node)
+            
             node.right = self._delete(inorder_successor.data, node.right)
 
         if node is None:

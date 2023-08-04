@@ -1,7 +1,6 @@
 from copy import deepcopy
 from PyCompGeomAlgorithms.core import BinTreeNode, AVLTree
 
-
 def test_avl_tree_insertion_no_imbalance():
     test_tree = AVLTree.from_iterable(i for i in range(1, 6))
     tree = deepcopy(test_tree)
@@ -224,4 +223,12 @@ def test_avl_tree_deletion_right_left():
     root.right.right.right.right = BinTreeNode(12)
     tree = AVLTree(root)
 
+    assert tree == test_tree
+
+
+def test_avl_tree_insertion_of_prefilled_node():
+    test_tree = AVLTree.from_iterable(i for i in range(1, 3))
+    test_tree.insert(BinTreeNode(0))
+
+    tree = AVLTree(BinTreeNode(1, BinTreeNode(0), BinTreeNode(2)))
     assert tree == test_tree
