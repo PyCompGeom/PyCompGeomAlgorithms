@@ -153,6 +153,24 @@ class Point:
             raise TypeError(f'right operand of "<" must be of {self.__class__} type')
         
         return self.coords < other.coords
+    
+    def __gt__(self, other):
+        if not isinstance(other, self.__class__):
+            raise TypeError(f'right operand of ">" must be of {self.__class__} type')
+
+        return self.coords > other.coords
+    
+    def __le__(self, other):
+        if not isinstance(other, self.__class__):
+            raise TypeError(f'right operand of "<=" must be of {self.__class__} type')
+        
+        return self < other or self == other
+    
+    def __ge__(self, other):
+        if not isinstance(other, self.__class__):
+            raise TypeError(f'right operand of ">=" must be of {self.__class__} type')
+        
+        return self > other or self == other
 
     def __add__(self, other):
         if not isinstance(other, self.__class__):
@@ -162,7 +180,7 @@ class Point:
     
     def __sub__(self, other):
         if not isinstance(other, self.__class__):
-            raise TypeError(f"right operand of addition must be of {self.__class__} type")
+            raise TypeError(f"right operand of subtraction must be of {self.__class__} type")
         
         return self.__class__(*(c1 - c2 for c1, c2 in zip(self.coords, other.coords)))
     
@@ -238,7 +256,7 @@ class BinTreeNode:
     @property
     def balance_factor(self):
         return (self.right.height if self.right else 0) - (self.left.height if self.left else 0)
-    
+
     @classmethod
     def copy_contents_without_children(cls, source, destination):
         if not isinstance(source, cls) or not isinstance(destination, cls):
@@ -300,6 +318,11 @@ class BinTreeNode:
         nodes.append(node)
         return nodes
 
+    def set_height(self):
+        left_height = self.left.height if self.left else 0
+        right_height = self.right.height if self.right else 0
+        self.height = max(left_height, right_height) + 1 if self.left or self.right else 0        
+
     def __eq__(self, other):
         return (
             isinstance(other, self.__class__)
@@ -333,13 +356,14 @@ class BinTree:
         node = cls.node_class(iterable[mid])
         node.left = cls._from_iterable(iterable, left, mid-1)
         node.right = cls._from_iterable(iterable, mid+1, right)
-        
-        left_height = node.left.height if node.left else 0
-        right_height = node.right.height if node.right else 0
-        node.height = max(left_height, right_height) + 1 if node.left or node.right else 0 
+        node.set_height()
 
         return node
     
+    @classmethod
+    def empty(cls):
+        return cls.from_iterable([])
+
     def traverse_preorder(self):
         return self.root.traverse_preorder() if self.root else []
 
@@ -348,6 +372,15 @@ class BinTree:
     
     def traverse_postorder(self):
         return self.root.traverse_postorder() if self.root else []
+    
+    def leaves_preorder(self):
+        return [node for node in self.traverse_preorder() if node.is_leaf]
+    
+    def leaves_inorder(self):
+        return [node for node in self.traverse_inorder() if node.is_leaf]
+    
+    def leaves_postorder(self):
+        return [node for node in self.traverse_postorder() if node.is_leaf]
     
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.root == other.root
@@ -364,11 +397,17 @@ class ThreadedBinTreeNode(BinTreeNode):
 
 
 class AVLTree(BinTree):
-    def insert(self, data):
-        self.root = self._insert(data, self.root)
+    def insert(self, data, starting_node=None):
+        if starting_node is None:
+            starting_node = self.root
+
+        self.root = self._insert(data, starting_node)
     
-    def delete(self, data):
-        self.root = self._delete(data, self.root)
+    def delete(self, data, starting_node=None):
+        if starting_node is None:
+            starting_node = self.root
+
+        self.root = self._delete(data, starting_node)
 
     def _insert(self, data, node=None):
         data_is_node = isinstance(data, self.node_class)
@@ -381,8 +420,8 @@ class AVLTree(BinTree):
         else:
             node.right = self._insert(data, node.right)
         
-        self._set_height(node)
-        return self._rebalance(node)
+        node.set_height()
+        return self.rebalance(node)
 
     def _delete(self, data, node):
         if node is None:
@@ -406,10 +445,10 @@ class AVLTree(BinTree):
         if node is None:
             return None
 
-        self._set_height(node)
-        return self._rebalance(node)
+        node.set_height()
+        return self.rebalance(node)
     
-    def _rebalance(self, node):
+    def rebalance(self, node):
         balance_factor = node.balance_factor
 
         if balance_factor == -2:
@@ -434,8 +473,8 @@ class AVLTree(BinTree):
         heavy_node.left = node
         node.right = swapped_subnode
 
-        self._set_height(node)
-        self._set_height(heavy_node)
+        node.set_height()
+        heavy_node.set_height()
 
         return heavy_node
     
@@ -445,15 +484,10 @@ class AVLTree(BinTree):
         heavy_node.right = node
         node.left = swapped_subnode
 
-        self._set_height(node)
-        self._set_height(heavy_node)
+        node.set_height()
+        heavy_node.set_height()
 
         return heavy_node
-
-    def _set_height(self, node):
-        left_height = node.left.height if node.left else 0
-        right_height = node.right.height if node.right else 0
-        node.height = max(left_height, right_height) + 1 if node.left or node.right else 0
 
 
 class ThreadedBinTree(AVLTree):
@@ -473,6 +507,9 @@ class ThreadedBinTree(AVLTree):
             nodes[-1].next = None
         
         return tree
+    
+    def __repr__(self):
+        return ", ".join([repr(node.data) for node in self.traverse_inorder()])
 
 
 class PointType(Enum):

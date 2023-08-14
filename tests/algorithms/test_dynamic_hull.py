@@ -1,16 +1,50 @@
+from copy import deepcopy
 from PyCompGeomAlgorithms.core import Point
-from PyCompGeomAlgorithms.dynamic_hull import DynamicHullNode, SubHullThreadedBinTree, upper_dynamic_hull, merge
+from PyCompGeomAlgorithms.dynamic_hull import DynamicHullNode, SubHullThreadedBinTree, DynamicHullTree, PathDirection, upper_dynamic_hull, merge
 
 
 def test_dynamic_hull1():
-    pts = [Point(3, 3), Point(1, 1), Point(5, 0)]
-    hull = [Point(1, 1), Point(3, 3), Point(5, 0)]
+    p2, p1, p3 = Point(3, 3), Point(1, 1), Point(5, 0)
+    pts = [p2, p1, p3]
+    root = DynamicHullNode(p2, SubHullThreadedBinTree.from_iterable([p1, p2, p3]), 1)
+    root.left = DynamicHullNode(p1, SubHullThreadedBinTree.from_iterable([p1, p2]))
+    root.left.left = DynamicHullNode.leaf(p1)
+    root.left.right = DynamicHullNode.leaf(p2)
+    root.right = DynamicHullNode.leaf(p3)
+    tree = DynamicHullTree(root)
+    
+    optimized_tree = deepcopy(tree)
+    optimized_tree.root.left.subhull = SubHullThreadedBinTree.empty()
+    optimized_tree.root.left.left.subhull = SubHullThreadedBinTree.empty()
+    optimized_tree.root.left.right.subhull = SubHullThreadedBinTree.empty()
+    optimized_tree.root.right.subhull = SubHullThreadedBinTree.empty()
+    
+    leaves = [root.left.left, root.left.right, root.right]
+    path = [PathDirection.right]
+    point_to_insert = Point(4, 3)
+    hull = [p1, p2, point_to_insert, p3]
 
-    assert hull == upper_dynamic_hull(pts, None)
+    ans = upper_dynamic_hull(pts, point_to_insert)
+
+    assert leaves == next(ans)
+    assert tree == next(ans)
+    assert tree == next(ans)
+    assert tree == next(ans)
+    assert tree == next(ans)
+    assert optimized_tree == next(ans)
+    assert path == next(ans)
+
+    optimized_tree.root.subhull = SubHullThreadedBinTree.from_iterable(hull)
+    optimized_tree.root.right = DynamicHullNode(point_to_insert, SubHullThreadedBinTree.empty())
+    optimized_tree.root.right.left = DynamicHullNode(point_to_insert, SubHullThreadedBinTree.empty())
+    optimized_tree.root.right.right = DynamicHullNode(p3, SubHullThreadedBinTree.empty())
+
+    assert (optimized_tree, hull) == next(ans)
+    assert hull == next(ans)
 
 
 def test_dynamic_hull2():
-    pts = [
+    pts = p5, p9, p4, p2, p6, p8, p3, p10, p7, p1, p11 = [
         Point(3, 10),
         Point(6, 8),
         Point(3, 5),
@@ -21,41 +55,176 @@ def test_dynamic_hull2():
         Point(7, 7),
         Point(5, 0),
         Point(0, 0),
-        Point(10, 3),
-    ]
-    hull = [
-        Point(0, 0),
-        Point(2, 8),
-        Point(3, 10),
-        Point(6, 8),
-        Point(7, 7),
         Point(10, 3)
     ]
-    
-    assert hull == upper_dynamic_hull(pts, None)
+    root = DynamicHullNode(p6, SubHullThreadedBinTree.from_iterable([p1, p2, p5, p9, p10, p11]), 2)
+    root.left = DynamicHullNode(p3, SubHullThreadedBinTree.from_iterable([p1, p2, p5, p6]), 1)
+    root.left.left = DynamicHullNode(p2, SubHullThreadedBinTree.from_iterable([p1, p2, p3]), 1)
+    root.left.left.left = DynamicHullNode(p1, SubHullThreadedBinTree.from_iterable([p1, p2]))
+    root.left.left.left.left = DynamicHullNode.leaf(p1)
+    root.left.left.left.right = DynamicHullNode.leaf(p2)
+    root.left.left.right = DynamicHullNode.leaf(p3)
+    root.left.right = DynamicHullNode(p5, SubHullThreadedBinTree.from_iterable([p5, p6]))
+    root.left.right.left = DynamicHullNode(p4, SubHullThreadedBinTree.from_iterable([p5]))
+    root.left.right.left.left = DynamicHullNode.leaf(p4)
+    root.left.right.left.right = DynamicHullNode.leaf(p5)
+    root.left.right.right = DynamicHullNode.leaf(p6)
+    root.right = DynamicHullNode(p9, SubHullThreadedBinTree.from_iterable([p8, p9, p10, p11]), 1)
+    root.right.left = DynamicHullNode(p8, SubHullThreadedBinTree.from_iterable([p8, p9]))
+    root.right.left.left = DynamicHullNode(p7, SubHullThreadedBinTree.from_iterable([p8]))
+    root.right.left.left.left = DynamicHullNode.leaf(p7)
+    root.right.left.left.right = DynamicHullNode.leaf(p8)
+    root.right.left.right = DynamicHullNode.leaf(p9)
+    root.right.right = DynamicHullNode(p10, SubHullThreadedBinTree.from_iterable([p10, p11]))
+    root.right.right.left = DynamicHullNode.leaf(p10)
+    root.right.right.right = DynamicHullNode.leaf(p11)
+    tree = DynamicHullTree(root)
+
+    optimized_tree = deepcopy(tree)
+    optimized_tree.root.left.subhull = SubHullThreadedBinTree.from_iterable([p6])
+    optimized_tree.root.left.left.subhull = SubHullThreadedBinTree.from_iterable([p3])
+    optimized_tree.root.left.left.left.subhull = SubHullThreadedBinTree.empty()
+    optimized_tree.root.left.left.left.left.subhull = SubHullThreadedBinTree.empty()
+    optimized_tree.root.left.left.left.right.subhull = SubHullThreadedBinTree.empty()
+    optimized_tree.root.left.left.right.subhull = SubHullThreadedBinTree.empty()
+    optimized_tree.root.left.right.subhull = SubHullThreadedBinTree.empty()
+    optimized_tree.root.left.right.left.subhull = SubHullThreadedBinTree.empty()
+    optimized_tree.root.left.right.left.right.subhull = SubHullThreadedBinTree.empty()
+    optimized_tree.root.left.right.right.subhull = SubHullThreadedBinTree.empty()
+    optimized_tree.root.right.subhull = SubHullThreadedBinTree.from_iterable([p8])
+    optimized_tree.root.right.left.subhull = SubHullThreadedBinTree.empty()
+    optimized_tree.root.right.left.left.subhull = SubHullThreadedBinTree.empty()
+    optimized_tree.root.right.left.left.right.subhull = SubHullThreadedBinTree.empty()
+    optimized_tree.root.right.left.right.subhull = SubHullThreadedBinTree.empty()
+    optimized_tree.root.right.right.subhull = SubHullThreadedBinTree.empty()
+    optimized_tree.root.right.right.left.subhull = SubHullThreadedBinTree.empty()
+    optimized_tree.root.right.right.right.subhull = SubHullThreadedBinTree.empty()
+
+    leaves = tree.leaves_inorder()
+    path = [PathDirection.left, PathDirection.right, PathDirection.left, PathDirection.right]
+    point_to_delete = p5
+    hull = [p1, p2, p9, p10, p11]
+
+    ans = upper_dynamic_hull(pts, point_to_delete)
+
+    assert leaves == next(ans)
+    assert tree == next(ans)
+    assert tree == next(ans)
+    assert tree == next(ans)
+    assert tree == next(ans)
+    assert optimized_tree == next(ans)
+    assert path == next(ans)
+
+    optimized_tree.root.subhull = SubHullThreadedBinTree.from_iterable([p1, p2, p9, p10, p11])
+    optimized_tree.root.left_supporting_index = 1
+    optimized_tree.root.left.subhull = SubHullThreadedBinTree.from_iterable([p6])
+    optimized_tree.root.left.right.left.right = optimized_tree.root.left.right.right
+    optimized_tree.root.left.right = optimized_tree.root.left.right.left
+    optimized_tree.root.left.right.subhull = SubHullThreadedBinTree.from_iterable([p4])
+    optimized_tree.root.left.right.left.subhull = SubHullThreadedBinTree.empty()
+
+    assert (optimized_tree, hull) == next(ans)
+    assert hull == next(ans)
 
 
 def test_dynamic_hull3():
-    pts = [Point(0, 2), Point(0, 4)]
-    hull = [Point(0, 4)]
+    """Vertical line, only upper point"""
+    pts = p1, p2, p3, p4, p5 = [Point(0, i) for i in range(5)]
+    root = DynamicHullNode(p3, SubHullThreadedBinTree.from_iterable([p5]))
+    root.left = DynamicHullNode(p2, SubHullThreadedBinTree.from_iterable([p3]))
+    root.left.left = DynamicHullNode(p1, SubHullThreadedBinTree.from_iterable([p2]))
+    root.left.left.left = DynamicHullNode.leaf(p1)
+    root.left.left.right = DynamicHullNode.leaf(p2)
+    root.left.right = DynamicHullNode.leaf(p3)
+    root.right = DynamicHullNode(p4, SubHullThreadedBinTree.from_iterable([p5]))
+    root.right.left = DynamicHullNode.leaf(p4)
+    root.right.right = DynamicHullNode.leaf(p5)
+    tree = DynamicHullTree(root)
 
-    assert hull == upper_dynamic_hull(pts, None)
+    optimized_tree = deepcopy(tree)
+    optimized_tree.root.left.left.right.subhull = SubHullThreadedBinTree.empty()
+    optimized_tree.root.left.right.subhull = SubHullThreadedBinTree.empty()
+    optimized_tree.root.right.subhull = SubHullThreadedBinTree.empty()
+    optimized_tree.root.right.right.subhull = SubHullThreadedBinTree.empty()
+
+    leaves = tree.leaves_inorder()
+    path = [PathDirection.right] * 2
+    point_to_insert = Point(0, 6)
+    hull = [point_to_insert]
+
+    ans = upper_dynamic_hull(pts, point_to_insert)
+
+    assert leaves == next(ans)
+    assert tree == next(ans)
+    assert tree == next(ans)
+    assert tree == next(ans)
+    assert tree == next(ans)
+    assert optimized_tree == next(ans)
+    assert path == next(ans)
+
+    optimized_tree.root.subhull = SubHullThreadedBinTree.from_iterable([point_to_insert])
+    optimized_tree.root.right.right = DynamicHullNode(p5, SubHullThreadedBinTree.empty())
+    optimized_tree.root.right.right.left = DynamicHullNode(p5, SubHullThreadedBinTree.from_iterable([p5]))
+    optimized_tree.root.right.right.right = DynamicHullNode(point_to_insert, SubHullThreadedBinTree.empty())
+    
+    assert (optimized_tree, hull) == next(ans)
+    assert hull == next(ans)
 
 
 def test_dynamic_hull4():
-    """Vertical line, only upper point"""
-    pts = [Point(0, i) for i in range(5)]
-    hull = [Point(0, 4)]
-
-    assert hull == upper_dynamic_hull(pts, None)
-
-
-def test_dynamic_hull5():
     """Horizontal line, segment of only extreme left and right points"""
-    pts = [Point(i, 0) for i in range(5)]
-    hull = [Point(0, 0), Point(4, 0)]
+    pts = p1, p2, p3, p4, p5 = [Point(i, 0) for i in range(1, 6)]
+    root = DynamicHullNode(p3, SubHullThreadedBinTree.from_iterable([p1, p5]))
+    root.left = DynamicHullNode(p2, SubHullThreadedBinTree.from_iterable([p1, p3]))
+    root.left.left = DynamicHullNode(p1, SubHullThreadedBinTree.from_iterable([p1, p2]))
+    root.left.left.left = DynamicHullNode.leaf(p1)
+    root.left.left.right = DynamicHullNode.leaf(p2)
+    root.left.right = DynamicHullNode.leaf(p3)
+    root.right = DynamicHullNode(p4, SubHullThreadedBinTree.from_iterable([p4, p5]))
+    root.right.left = DynamicHullNode.leaf(p4)
+    root.right.right = DynamicHullNode.leaf(p5)
+    tree = DynamicHullTree(root)
 
-    assert hull == upper_dynamic_hull(pts, None)
+    optimized_tree = deepcopy(tree)
+    optimized_tree.root.left.subhull = SubHullThreadedBinTree.from_iterable([p3])
+    optimized_tree.root.left.left.subhull = SubHullThreadedBinTree.from_iterable([p2])
+    optimized_tree.root.left.left.left.subhull = SubHullThreadedBinTree.empty()
+    optimized_tree.root.left.left.right.subhull = SubHullThreadedBinTree.empty()
+    optimized_tree.root.left.right.subhull = SubHullThreadedBinTree.empty()
+    optimized_tree.root.right.subhull = SubHullThreadedBinTree.from_iterable([p4])
+    optimized_tree.root.right.left.subhull = SubHullThreadedBinTree.empty()
+    optimized_tree.root.right.right.subhull = SubHullThreadedBinTree.empty()
+
+    leaves = tree.leaves_inorder()
+    path = [PathDirection.left] * 3
+    point_to_insert = Point(0, 0)
+    hull = [point_to_insert, p5]
+
+    ans = upper_dynamic_hull(pts, point_to_insert)
+
+    assert leaves == next(ans)
+    assert tree == next(ans)
+    assert tree == next(ans)
+    assert tree == next(ans)
+    assert tree == next(ans)
+    assert optimized_tree == next(ans)
+    assert path == next(ans)
+
+    optimized_tree.root.subhull = SubHullThreadedBinTree.from_iterable(hull)
+    optimized_tree.root.left = DynamicHullNode(p1, SubHullThreadedBinTree.from_iterable([p3]))
+    optimized_tree.root.left.left = DynamicHullNode(point_to_insert, SubHullThreadedBinTree.from_iterable([p1]))
+    optimized_tree.root.left.left.left = DynamicHullNode.leaf(point_to_insert)
+    optimized_tree.root.left.left.left.subhull = SubHullThreadedBinTree.empty()
+    optimized_tree.root.left.left.right = DynamicHullNode.leaf(p1)
+    optimized_tree.root.left.left.right.subhull = SubHullThreadedBinTree.empty()
+    optimized_tree.root.left.right = DynamicHullNode(p2, SubHullThreadedBinTree.from_iterable([p2]))
+    optimized_tree.root.left.right.left = DynamicHullNode.leaf(p2)
+    optimized_tree.root.left.right.left.subhull = SubHullThreadedBinTree.empty()
+    optimized_tree.root.left.right.right = DynamicHullNode.leaf(p3)
+    optimized_tree.root.left.right.right.subhull = SubHullThreadedBinTree.empty()
+
+    assert (optimized_tree, hull) == next(ans)
+    assert hull == next(ans)
 
 
 def make_two_segment_nodes(points):
