@@ -13,8 +13,8 @@ class DynamicHullNode(BinTreeNode):
         self.subhull = SubHullThreadedBinTree.from_iterable(subhull_points)
         self.optimized_subhull = SubHullThreadedBinTree.from_iterable(optimized_subhull_points if optimized_subhull_points else [])
         self.left_supporting_index = left_supporting_index
-        self._left_supporting = left_supporting
-        self._right_supporting = right_supporting
+        self.left_supporting = left_supporting
+        self.right_supporting = right_supporting
     
     @property
     def point(self):
@@ -33,6 +33,14 @@ class DynamicHullNode(BinTreeNode):
         subhull = self.subhull.traverse_inorder()
         return self._left_supporting if self._left_supporting else subhull[self.left_supporting_index].point
     
+    @left_supporting.setter
+    def left_supporting(self, value):
+        self._left_supporting = value
+    
+    @left_supporting.deleter
+    def left_supporting(self):
+        del self._left_supporting
+
     @property
     def right_supporting(self):
         subhull = self.subhull.traverse_inorder()
@@ -40,6 +48,14 @@ class DynamicHullNode(BinTreeNode):
             return self._right_supporting if self._right_supporting else subhull[self.left_supporting_index+1].point
         except IndexError:
             return self.left_supporting
+    
+    @right_supporting.setter
+    def right_supporting(self, value):
+        self._right_supporting = value
+    
+    @right_supporting.deleter
+    def right_supporting(self):
+        del self._right_supporting
 
     @property
     def is_point(self):
