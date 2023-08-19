@@ -5,10 +5,16 @@ from .jarvis import jarvis
 
 
 class DynamicHullNode(BinTreeNode):
-    def __init__(self, data, subhull=None, left_supporting_index=0):
+    def __init__(
+            self, data, subhull_points, left_supporting_index=0,
+            left_supporting=None, right_supporting=None, optimized_subhull_points=None
+        ):
         super().__init__(data)
-        self.subhull = subhull
+        self.subhull = SubHullThreadedBinTree.from_iterable(subhull_points)
+        self.optimized_subhull = SubHullThreadedBinTree.from_iterable(optimized_subhull_points if optimized_subhull_points else [])
         self.left_supporting_index = left_supporting_index
+        self._left_supporting = left_supporting
+        self._right_supporting = right_supporting
     
     @property
     def point(self):
@@ -23,6 +29,19 @@ class DynamicHullNode(BinTreeNode):
         del self.data
 
     @property
+    def left_supporting(self):
+        subhull = self.subhull.traverse_inorder()
+        return self._left_supporting if self._left_supporting else subhull[self.left_supporting_index].point
+    
+    @property
+    def right_supporting(self):
+        subhull = self.subhull.traverse_inorder()
+        try:
+            return self._right_supporting if self._right_supporting else subhull[self.left_supporting_index+1].point
+        except IndexError:
+            return self.left_supporting
+
+    @property
     def is_point(self):
         return self.subhull.root.is_leaf
 
@@ -33,13 +52,16 @@ class DynamicHullNode(BinTreeNode):
     
     @classmethod
     def leaf(cls, point):
-        return cls(point, SubHullThreadedBinTree.from_iterable([point]))
+        return cls(point, [point])
 
     def __eq__(self, other):
         return (
             super().__eq__(other)
             and self.subhull == other.subhull
             and self.left_supporting_index == other.left_supporting_index
+            and self.left_supporting == other.left_supporting
+            and self.right_supporting == other.right_supporting
+            and self.optimized_subhull == other.optimized_subhull
         )
     
     def __repr__(self):
@@ -60,7 +82,7 @@ class DynamicHullTree(AVLTree):
         if n is None:
             n = len(iterable)
         if n == 1:
-            res = DynamicHullNode(iterable[i[0]], SubHullThreadedBinTree.from_iterable([iterable[i[0]]]))
+            res = DynamicHullNode(iterable[i[0]], [iterable[i[0]]])
             i[0] += 1
             return res
 
@@ -210,7 +232,7 @@ def merge(node1, node2):
     
     joint_node = DynamicHullNode(
         data=node1.rightmost_node.point,
-        subhull=SubHullThreadedBinTree.from_iterable(subhull),
+        subhull_points=subhull,
         left_supporting_index=subhull.index(prev1.point)
     )
     joint_node.left, joint_node.right = node1, node2
@@ -239,7 +261,7 @@ def merge_trivial(node1, node2):
     left_supporting_point = subhull[0] if len(subhull) == 1 else next(p for p in reversed(points1) if p in subhull)
     joint_node = DynamicHullNode(
         data=rightmost_point_in_left_subtree,
-        subhull=SubHullThreadedBinTree.from_iterable(subhull),
+        subhull_points=subhull,
         left_supporting_index=subhull.index(left_supporting_point)
     )
     joint_node.left, joint_node.right = node1, node2
@@ -270,6 +292,11 @@ def next_right_node(node, point_type):
 
 
 def optimize_dynamic_hull_tree(node, parent_node=None):
+    node.optimized_subhull = node.subhull
+    _optimize_dynamic_hull_tree(node, parent_node)
+
+
+def _optimize_dynamic_hull_tree(node, parent_node):
     if node.left:
         optimize_dynamic_hull_tree(node.left, node)
     if node.right:
@@ -283,4 +310,4 @@ def optimize_subhull(node, parent_node):
     parent_points = {n.point for n in parent_node.subhull.traverse_inorder()}
 
     filtered_points = [p for p in node_points if p not in parent_points]
-    node.subhull = SubHullThreadedBinTree.from_iterable(filtered_points)
+    node.optimized_subhull = SubHullThreadedBinTree.from_iterable(filtered_points)

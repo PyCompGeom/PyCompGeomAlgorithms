@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="PyCompGeomAlgorithms",
-    version="1.0.11",
+    version="1.0.12",
     author="artandfi (Artem Fisunenko)",
     author_email="artyom.fisunenko@gmail.com",
     description="An implementation of computational geometry algorithms in Python3.",
