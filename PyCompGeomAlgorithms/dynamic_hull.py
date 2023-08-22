@@ -10,8 +10,8 @@ class DynamicHullNode(BinTreeNode):
             left_supporting=None, right_supporting=None, optimized_subhull_points=None
         ):
         super().__init__(data)
-        self.subhull = SubHullThreadedBinTree.from_iterable(subhull_points)
-        self.optimized_subhull = SubHullThreadedBinTree.from_iterable(optimized_subhull_points if optimized_subhull_points else [])
+        self.subhull = SubhullThreadedBinTree.from_iterable(subhull_points)
+        self.optimized_subhull = SubhullThreadedBinTree.from_iterable(optimized_subhull_points if optimized_subhull_points else [])
         self.left_supporting_index = left_supporting_index
         self.left_supporting = left_supporting
         self.right_supporting = right_supporting
@@ -173,7 +173,7 @@ class DynamicHullTree(AVLTree):
         return merge(node.left, node.right)
 
 
-class SubHullNode(ThreadedBinTreeNode):
+class SubhullNode(ThreadedBinTreeNode):
     @property
     def point(self):
         return self.data
@@ -187,8 +187,8 @@ class SubHullNode(ThreadedBinTreeNode):
         del self.data
 
 
-class SubHullThreadedBinTree(ThreadedBinTree):
-    node_class = SubHullNode
+class SubhullThreadedBinTree(ThreadedBinTree):
+    node_class = SubhullNode
 
     @classmethod
     def from_iterable(cls, iterable, circular=False):
@@ -326,4 +326,4 @@ def optimize_subhull(node, parent_node):
     parent_points = {n.point for n in parent_node.subhull.traverse_inorder()}
 
     filtered_points = [p for p in node_points if p not in parent_points]
-    node.optimized_subhull = SubHullThreadedBinTree.from_iterable(filtered_points)
+    node.optimized_subhull = SubhullThreadedBinTree.from_iterable(filtered_points)
