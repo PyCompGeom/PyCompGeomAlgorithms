@@ -21,18 +21,31 @@ class GrahamStepsTableRow:
         return str(self)
 
 
-class GrahamStepsTable(list):
-    def __init__(self, ordered_points):
+class GrahamStepsTable:
+    def __init__(self, ordered_points, rows=None):
         super().__init__()
         self.ordered_points = ordered_points
+        self.rows = rows if rows else []
     
+    def append(self, item):
+        self.rows.append(item)
+    
+    def extend(self, iterable):
+        self.rows.extend(iterable)
+
+    def __getitem__(self, key):
+        return self.rows[key]
+    
+    def __setitem__(self, key, value):
+        self.rows[key] = value
+
     def __eq__(self, other):
         return (
             isinstance(other, self.__class__) and
             self.ordered_points == other.ordered_points and
-            super().__eq__(other)
+            self.rows == other.rows
         )
-    
+
     def __str__(self):
         return f"[{', '.join(str(row) for row in self)}]"
     
