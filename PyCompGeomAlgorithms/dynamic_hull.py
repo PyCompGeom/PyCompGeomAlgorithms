@@ -7,9 +7,9 @@ from .jarvis import jarvis
 class DynamicHullNode(BinTreeNode):
     def __init__(
             self, data, subhull_points, left_supporting_index=0,
-            left_supporting=None, right_supporting=None, optimized_subhull_points=None
+            left_supporting=None, right_supporting=None, optimized_subhull_points=None, left=None, right=None
         ):
-        super().__init__(data)
+        super().__init__(data, left, right)
         self.subhull = SubhullThreadedBinTree.from_iterable(subhull_points)
         self.optimized_subhull = SubhullThreadedBinTree.from_iterable(optimized_subhull_points if optimized_subhull_points else [])
         self.left_supporting_index = left_supporting_index
