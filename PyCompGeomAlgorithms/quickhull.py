@@ -6,8 +6,8 @@ sort_right_to_left = lambda p: (-p.x, p.y)
 
 
 class QuickhullNode(BinTreeNode):
-    def __init__(self, data, h=None, subhull=None):
-        super().__init__(data)
+    def __init__(self, data, left=None, right=None, h=None, subhull=None):
+        super().__init__(data, left, right)
         self.h = h
         self.subhull = subhull
     
