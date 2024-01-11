@@ -1,6 +1,6 @@
 from copy import deepcopy
 from enum import Enum
-from .core import BinTreeNode, AVLTree, ThreadedBinTree, ThreadedBinTreeNode, PointType, Point
+from .core import PyCGAObject, BinTreeNode, AVLTree, ThreadedBinTree, ThreadedBinTreeNode, PointType, Point
 from .jarvis import jarvis
 
 
@@ -195,7 +195,7 @@ class SubhullThreadedBinTree(ThreadedBinTree):
         return super().from_iterable(iterable, circular)
 
 
-class PathDirection(Enum):
+class PathDirection(PyCGAObject, Enum):
     left = "left"
     right = "right"
 

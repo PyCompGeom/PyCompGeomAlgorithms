@@ -3,7 +3,12 @@ from math import inf, pi, acos, atan2, isclose
 from typing import Iterable, Generator
 
 
-class Vector:
+class PyCGAObject(object):
+    """A class to conveniently distinguish PyCompGeomAlgorithms library objects."""
+    pass
+
+
+class Vector(PyCGAObject):
     def __init__(self, *coords: Iterable[float]):
         self.coords = tuple(coords)
     
@@ -26,14 +31,14 @@ class Vector:
     @classmethod
     def dot_product(cls, vector1, vector2):
         if not isinstance(vector1, cls) or not isinstance(vector2, cls):
-            raise TypeError(f"operands must be of type {vector1.__class__}")
+            raise TypeError(f"operands must be of type {cls}")
 
         return sum(c1 * c2 for c1, c2 in zip(vector1.coords, vector2.coords))
 
     @classmethod
     def cross_product(cls, vector1, vector2):
         if not isinstance(vector1, cls) or not isinstance(vector2, cls):
-            raise TypeError(f"operands must be of type {vector1.__class__}")
+            raise TypeError(f"operands must be of type {cls}")
 
         return vector1.x * vector2.y - vector1.y * vector2.x
 
@@ -62,7 +67,7 @@ class Vector:
         return str(self)
 
 
-class Point:
+class Point(PyCGAObject):
     def __init__(self, *coords: Iterable[float]):
         self.coords = tuple(coords)
     
@@ -194,7 +199,7 @@ class Point:
         return str(self)
 
 
-class Line2D:
+class Line2D(PyCGAObject):
     """A 2D line represented by the equation ax + by + c = 0 or y = slope * x + y_intercept."""
     def __init__(self, point1, point2):
         if not isinstance(point1, Point) or not isinstance(point2, Point):
@@ -226,7 +231,7 @@ class Line2D:
         return -inf if self.b == 0 else -self.c / self.b
 
 
-class BinTreeNode:
+class BinTreeNode(PyCGAObject):
     def __init__(self, data, left=None, right=None, height=0):
         self.data = data
         self.left = left
@@ -332,7 +337,7 @@ class BinTreeNode:
         )
     
 
-class BinTree:
+class BinTree(PyCGAObject):
     node_class = BinTreeNode
 
     def __init__(self, root):
@@ -512,7 +517,7 @@ class ThreadedBinTree(AVLTree):
         return ", ".join([repr(node.data) for node in self.traverse_inorder()])
 
 
-class PointType(Enum):
+class PointType(PyCGAObject, Enum):
     convex = 0
     reflex = 1
     left_supporting = 2

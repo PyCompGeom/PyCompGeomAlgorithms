@@ -1,8 +1,8 @@
 from math import pi
-from .core import Point
+from .core import PyCGAObject, Point
 
 
-class GrahamStepsTableRow:
+class GrahamStepsTableRow(PyCGAObject):
     def __init__(self, point_triple, is_angle_less_than_pi):
         self.point_triple = point_triple
         self.is_angle_less_than_pi = is_angle_less_than_pi
@@ -21,7 +21,7 @@ class GrahamStepsTableRow:
         return str(self)
 
 
-class GrahamStepsTable:
+class GrahamStepsTable(PyCGAObject):
     def __init__(self, ordered_points, rows=None):
         super().__init__()
         self.ordered_points = ordered_points
