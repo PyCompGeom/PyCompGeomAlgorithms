@@ -18,7 +18,7 @@ This library contains implementations for computational geometry algorithms base
   * *Jarvis' march*: construct the convex hull of a given set of points, using the so-called gift wrapping technique.
 * Dynamic problem
   * *Preparata's algorithm*: construct the convex hull of a set of points being dynamically added to a current hull.
-  * *Dynamic convex hull maintenance **(TBD)***: construct the convex hull of a set of points and re-construct it on addition or deletion of a point.
+  * *Dynamic convex hull maintenance*: construct the convex hull of a set of points and re-construct it on addition or deletion of a point.
 #### Proximity problems
 * *Divide-and-conquer closest pair search **(TBD)***: given a set of points, find the two points with the smallest mutual distance, using divide-and-conquer approach.
 * *Divide-and-conquer Voronoi diagram constructing **(TBD)***: given a set points, construct their Voronoi diagram, using divide-and-conquer approach.
