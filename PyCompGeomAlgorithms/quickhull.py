@@ -24,6 +24,10 @@ class QuickhullNode(BinTreeNode):
         del self.data
 
 
+class QuickhullTree(BinTree):
+    node_class = QuickhullNode
+
+
 def quickhull(points):
     leftmost_point = min(points, key=lambda p: p.coords)
     rightmost_point = max(points, key=lambda p: p.coords)
@@ -31,7 +35,7 @@ def quickhull(points):
     subset1 = make_subset(points, leftmost_point, rightmost_point, sort_key=sort_left_to_right)
     subset2 = make_subset(points, rightmost_point, leftmost_point, sort_key=sort_right_to_left)
 
-    tree = BinTree(QuickhullNode(subset1 + subset2[1:-1]))
+    tree = QuickhullTree(QuickhullNode(subset1 + subset2[1:-1]))
     tree.root.left, tree.root.right = QuickhullNode(subset1), QuickhullNode(subset2)
 
     hull = (

@@ -1,11 +1,11 @@
-from PyCompGeomAlgorithms.core import Point, BinTree
-from PyCompGeomAlgorithms.quickhull import QuickhullNode, quickhull
+from PyCompGeomAlgorithms.core import Point
+from PyCompGeomAlgorithms.quickhull import QuickhullNode, QuickhullTree, quickhull
 
 
 def test_quickhull1():
     pts = [Point(3, 4), Point(0, 0), Point(7, 2)]
     hull = [pts[1], pts[0], pts[2]]
-    tree = BinTree(QuickhullNode([pts[1], pts[0], pts[2]], subhull=hull))
+    tree = QuickhullTree(QuickhullNode([pts[1], pts[0], pts[2]], subhull=hull))
     tree.root.left = QuickhullNode([pts[1], pts[0], pts[2]], h=pts[0], subhull=hull)
     tree.root.right = QuickhullNode([pts[2], pts[1]], subhull=[pts[2], pts[1]])
     tree.root.left.left = QuickhullNode([pts[1], pts[0]], subhull=[pts[1], pts[0]])
@@ -39,7 +39,7 @@ def test_quickhull2():
         Point(1, 4),
     ]
     hull = [pts[0], pts[10], pts[3], pts[8], pts[7], pts[5]]
-    tree = BinTree(
+    tree = QuickhullTree(
         QuickhullNode(
             [
                 pts[0],
