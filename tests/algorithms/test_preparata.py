@@ -91,3 +91,36 @@ def test_preparata4():
     assert next(ans) == deleted_points
     assert next(ans) == (hulls, trees)
     assert next(ans) == hull
+
+
+def test_preparata5():
+    p1 = Point(7, 0)
+    p2 = Point(3, 3)
+    p3 = Point(0, 0)
+    p4 = Point(10, 8)
+    p5 = Point(7, 9)
+    points = [p1, p2, p3, p4, p5]
+    hull0 = [p3, p2, p1]
+    hull = [p3, p5, p4, p1]
+    tree0 = PreparataThreadedBinTree.from_iterable(hull0)
+    left_paths = [
+        [p2, p1],
+        [p5, p1],
+    ]
+    right_paths = [
+        [p2, p3],
+        [p5],
+    ]
+    deleted_points = [[p2], []]
+    hulls = [
+        [p3, p5, p1],
+        hull
+    ]
+    trees = [PreparataThreadedBinTree.from_iterable(hulls[0])]
+
+    ans = preparata(points)
+    assert next(ans) == (hull0, tree0)
+    assert next(ans) == (left_paths, right_paths)
+    assert next(ans) == deleted_points
+    assert next(ans) == (hulls, trees)
+    assert next(ans) == hull
