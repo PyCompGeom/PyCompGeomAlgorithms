@@ -195,7 +195,7 @@ class SubhullThreadedBinTree(ThreadedBinTree):
         return super().from_iterable(iterable, circular)
 
 
-class PathDirection(PyCGAObject, Enum):
+class PathDirection(PyCGAObject, str, Enum):
     left = "left"
     right = "right"
 
