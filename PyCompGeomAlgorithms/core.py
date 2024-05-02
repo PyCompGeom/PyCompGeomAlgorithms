@@ -517,6 +517,11 @@ class ThreadedBinTree(AVLTree):
         return ", ".join([repr(node.data) for node in self.traverse_inorder()])
 
 
+class PathDirection(PyCGAObject, str, Enum):
+    left = "left"
+    right = "right"
+
+
 class PointType(PyCGAObject, Enum):
     convex = 0
     reflex = 1

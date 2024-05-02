@@ -1,6 +1,5 @@
 from copy import deepcopy
-from enum import Enum
-from .core import PyCGAObject, BinTreeNode, AVLTree, ThreadedBinTree, ThreadedBinTreeNode, PointType, Point
+from .core import PathDirection, BinTreeNode, AVLTree, ThreadedBinTree, ThreadedBinTreeNode, PointType, Point
 from .jarvis import jarvis
 
 
@@ -193,11 +192,6 @@ class SubhullThreadedBinTree(ThreadedBinTree):
     @classmethod
     def from_iterable(cls, iterable, circular=False):
         return super().from_iterable(iterable, circular)
-
-
-class PathDirection(PyCGAObject, str, Enum):
-    left = "left"
-    right = "right"
 
 
 def upper_dynamic_hull(points, point_to_insert_or_delete):
