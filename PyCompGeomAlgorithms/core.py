@@ -328,10 +328,15 @@ class BinTreeNode(PyCGAObject):
         right_height = self.right.height if self.right else 0
         self.height = max(left_height, right_height) + 1 if self.left or self.right else 0        
 
+    def weak_equal(self, other):
+        """Weak (non-recursive) equality that only checks whether the nodes are of the same type and their contents match."""
+        return isinstance(other, self.__class__) and self.data == other.data
+
     def __eq__(self, other):
+        """Strong (recursive) equality that checks whether the nodes are of the same type and their trees are equal."""
         return (
             isinstance(other, self.__class__)
-            and self.data == other.data
+            and self.weak_equal(other)
             and self.left == other.left
             and self.right == other.right
         )

@@ -69,9 +69,9 @@ class DynamicHullNode(BinTreeNode):
     def leaf(cls, point):
         return cls(point, [point])
 
-    def __eq__(self, other):
+    def weak_equal(self, other):
         return (
-            super().__eq__(other)
+            super().weak_equal(other)
             and self.subhull == other.subhull
             and self.left_supporting_index == other.left_supporting_index
             and self.left_supporting == other.left_supporting

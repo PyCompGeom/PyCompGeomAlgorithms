@@ -10,7 +10,14 @@ class QuickhullNode(BinTreeNode):
         super().__init__(data, left, right)
         self.h = h
         self.subhull = subhull
-    
+
+    def weak_equal(self, other):
+        return (
+            super().weak_equal(other)
+            and self.h == other.h
+            and self.subhull == other.subhull
+        )
+
     @property
     def points(self):
         return self.data
