@@ -198,29 +198,26 @@ def upper_dynamic_hull(points, point_to_insert_or_delete):
     points.sort()
 
     tree = DynamicHullTree.from_iterable(points)
+    optimize_dynamic_hull_tree(tree.root)
     yield tree.leaves_inorder()
     yield tree
     yield tree
     yield tree
     yield tree
-
-    optimized_tree = deepcopy(tree)
-    optimize_dynamic_hull_tree(optimized_tree.root)
-    yield optimized_tree
+    yield tree
 
     path = []
-    modified_tree = deepcopy(tree)
     if point_to_insert_or_delete in points:
-        modified_tree.delete(point_to_insert_or_delete, path=path)
+        tree.delete(point_to_insert_or_delete, path=path)
     else:
-        modified_tree.insert(point_to_insert_or_delete, path=path)
+        tree.insert(point_to_insert_or_delete, path=path)
     
     yield path
 
-    optimize_dynamic_hull_tree(modified_tree.root)
-    hull = [n.point for n in modified_tree.root.subhull.traverse_inorder()]
+    optimize_dynamic_hull_tree(tree.root)
+    hull = [n.point for n in tree.root.subhull.traverse_inorder()]
 
-    yield modified_tree, hull
+    yield tree, hull
     yield hull
 
 
