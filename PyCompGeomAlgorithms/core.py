@@ -1,53 +1,49 @@
+from __future__ import annotations
 from enum import Enum
 from math import inf, pi, acos, atan2, isclose
-from typing import Iterable, Generator
+from typing import Iterable, Generator, Any, ClassVar
+from pydantic import BaseModel
 
 
-class PyCGAObject(object):
-    """A class to conveniently distinguish PyCompGeomAlgorithms library objects."""
-    pass
-
-
-class Vector(PyCGAObject):
-    def __init__(self, *coords: Iterable[float]):
-        self.coords = tuple(coords)
+class Vector(BaseModel):
+    coords: Iterable[float]
     
     @property
-    def x(self):
+    def x(self) -> float:
         return self.coords[0]
     
     @property
-    def y(self):
+    def y(self) -> float:
         return self.coords[1]
     
     @property
-    def z(self):
+    def z(self) -> float:
         return self.coords[2]
     
     @classmethod
-    def from_points(cls, point1, point2):
-        return cls(*(point2 - point1).coords)
+    def from_points(cls, point1, point2) -> Vector:
+        return cls(coords=(point2 - point1).coords)
     
     @classmethod
-    def dot_product(cls, vector1, vector2):
-        if not isinstance(vector1, cls) or not isinstance(vector2, cls):
-            raise TypeError(f"operands must be of type {cls}")
+    def dot_product(cls, vector1: Vector, vector2: Vector) -> float:
+        if not isinstance(vector1, Vector) or not isinstance(vector2, Vector):
+            raise TypeError(f"operands must be of type {Vector}")
 
-        return sum(c1 * c2 for c1, c2 in zip(vector1.coords, vector2.coords))
+        return sum(coord1 * coord2 for coord1, coord2 in zip(vector1.coords, vector2.coords))
 
     @classmethod
-    def cross_product(cls, vector1, vector2):
-        if not isinstance(vector1, cls) or not isinstance(vector2, cls):
-            raise TypeError(f"operands must be of type {cls}")
+    def cross_product(cls, vector1: Vector, vector2: Vector) -> float:
+        if not isinstance(vector1, Vector) or not isinstance(vector2, Vector):
+            raise TypeError(f"operands must be of type {Vector}")
 
         return vector1.x * vector2.y - vector1.y * vector2.x
 
-    def norm(self, metric="euclidean"):
+    def norm(self, metric: str = 'euclidean') -> float:
         try:
             p = {
-                "octahedral": 1,
-                "euclidean": 2,
-                "cubic": inf
+                'octahedral': 1,
+                'euclidean': 2,
+                'cubic': inf
             }[metric]
         except KeyError:
             raise ValueError(f'unknown metric "{metric}"')
@@ -57,38 +53,34 @@ class Vector(PyCGAObject):
         
         return sum(abs(c**p) for c in self.coords) ** (1 / p)
     
-    def normalize(self, metric="euclidean"):
+    def normalize(self, metric: str = 'euclidean') -> None:
         self.coords = tuple(c / self.norm(metric) for c in self.coords)
     
-    def __str__(self):
+    def __str__(self) -> str:
         return f"({', '.join(str(c) for c in self.coords)})"
-    
-    def __repr__(self):
-        return str(self)
 
 
-class Point(PyCGAObject):
-    def __init__(self, *coords: Iterable[float]):
-        self.coords = tuple(coords)
+class Point(BaseModel):
+    coords: Iterable[float]
     
     @property
-    def x(self):
+    def x(self) -> float:
         return self.coords[0]
     
     @property
-    def y(self):
+    def y(self) -> float:
         return self.coords[1]
     
     @property
-    def z(self):
+    def z(self) -> float:
         return self.coords[2]
     
     @classmethod
-    def centroid(cls, *points):
+    def centroid(cls, *points: Iterable[Point]) -> Point:
         return cls(*(sum(coord) / len(coord) for coord in zip(*points)))
     
     @staticmethod
-    def angle(point1, point2, point3):
+    def angle(point1: Point, point2: Point, point3: Point) -> float:
         v1 = Vector.from_points(point2, point1)
         v2 = Vector.from_points(point2, point3)
         v1.normalize()
@@ -97,17 +89,17 @@ class Point(PyCGAObject):
         return acos(Vector.dot_product(v1, v2) / (v1.norm() * v2.norm()))
 
     @staticmethod
-    def polar_angle(point, origin):
-        return atan2(point.y-origin.y, point.x-origin.x)
+    def polar_angle(point: Point, origin: Point) -> float:
+        return atan2(point.y - origin.y, point.x - origin.x)
     
     @classmethod
-    def nonnegative_polar_angle(cls, point, origin):
+    def nonnegative_polar_angle(cls, point: Point, origin: Point) -> float:
         angle = cls.polar_angle(point, origin)
         return angle if angle >= 0 else 2 * pi + angle
 
     @classmethod
-    def dist(cls, point, obj, metric="euclidean"):
-        if isinstance(obj, cls):
+    def dist(cls, point: Point, obj: Point | Line2D, metric: str ="euclidean") -> float:
+        if isinstance(obj, Point):
             try:
                 p = {
                     "manhattan": 1,
@@ -135,115 +127,112 @@ class Point(PyCGAObject):
             return abs(obj.a*point.x+obj.b*point.y+obj.c) / denominator
 
     @staticmethod
-    def direction(point1, point2, point3):
+    def direction(point1: Point, point2: Point, point3: Point) -> float:
         v1 = Vector.from_points(point1, point3)
         v2 = Vector.from_points(point1, point2)
 
         return Vector.cross_product(v1, v2)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.coords)
     
-    def __getitem__(self, key):
+    def __getitem__(self, key: int) -> float:
         return self.coords[key]
     
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         return (
             isinstance(other, self.__class__)
             and all(isclose(c1, c2, abs_tol=1e-3, rel_tol=0) for c1, c2 in zip(self.coords, other.coords))
         )
     
-    def __lt__(self, other):
+    def __lt__(self, other: Point) -> bool:
         if not isinstance(other, self.__class__):
             raise TypeError(f'right operand of "<" must be of {self.__class__} type')
         
         return self.coords < other.coords
     
-    def __gt__(self, other):
+    def __gt__(self, other: Point) -> bool:
         if not isinstance(other, self.__class__):
             raise TypeError(f'right operand of ">" must be of {self.__class__} type')
 
         return self.coords > other.coords
     
-    def __le__(self, other):
+    def __le__(self, other: Point) -> bool:
         if not isinstance(other, self.__class__):
             raise TypeError(f'right operand of "<=" must be of {self.__class__} type')
         
         return self < other or self == other
     
-    def __ge__(self, other):
+    def __ge__(self, other: Point) -> bool:
         if not isinstance(other, self.__class__):
             raise TypeError(f'right operand of ">=" must be of {self.__class__} type')
         
         return self > other or self == other
 
-    def __add__(self, other):
+    def __add__(self, other: Point) -> bool:
         if not isinstance(other, self.__class__):
             raise TypeError(f"right operand of addition must be of {self.__class__} type")
         
         return self.__class__(*(c1 + c2 for c1, c2 in zip(self.coords, other.coords)))
     
-    def __sub__(self, other):
+    def __sub__(self, other: Point) -> bool:
         if not isinstance(other, self.__class__):
             raise TypeError(f"right operand of subtraction must be of {self.__class__} type")
         
         return self.__class__(*(c1 - c2 for c1, c2 in zip(self.coords, other.coords)))
     
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.coords)
     
-    def __str__(self):
+    def __str__(self) -> str:
         return f"({', '.join(str(c) for c in self.coords)})"
-    
-    def __repr__(self):
-        return str(self)
 
 
-class Line2D(PyCGAObject):
+class Line2D(BaseModel):
     """A 2D line represented by the equation ax + by + c = 0 or y = slope * x + y_intercept."""
-    def __init__(self, point1, point2):
-        if not isinstance(point1, Point) or not isinstance(point2, Point):
-            raise TypeError(f"2D line must be initialized with two distinct points of type {Point}")
-        if point1 == point2:
-            raise ValueError(f"2D line must be initialized with two distinct points")
+    
+    point1: Point
+    point2: Point
 
-        self.point1 = point1
-        self.point2 = point2
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        if self.point1 == self.point2:
+            raise ValueError(f"2D line must be initialized with two distinct points")
     
     @property
-    def a(self):
+    def a(self) -> float:
         return self.point1.y - self.point2.y
     
     @property
-    def b(self):
+    def b(self) -> float:
         return self.point2.x - self.point1.x
     
     @property
-    def c(self):
+    def c(self) -> float:
         return self.point1.x * self.point2.y - self.point2.x * self.point1.y
     
     @property
-    def slope(self):
+    def slope(self) -> float:
         return -inf if self.b == 0 else -self.a / self.b
     
     @property
-    def y_intercept(self):
+    def y_intercept(self) -> float:
         return -inf if self.b == 0 else -self.c / self.b
 
 
-class BinTreeNode(PyCGAObject):
-    def __init__(self, data, left=None, right=None, height=0):
-        self.data = data
-        self.left = left
-        self.right = right
-        self.height = height
+class BinTreeNode(BaseModel):
+    data: Any
+    left: BinTreeNode | None = None
+    right: BinTreeNode | None = None
+    height: int = 0
     
     @property
-    def is_leaf(self):
+    def is_leaf(self) -> bool:
         return self.left is None and self.right is None
     
     @property
-    def leftmost_node(self):
+    def leftmost_node(self) -> BinTreeNode:
         res = self
         while res.left:
             res = res.left
@@ -251,7 +240,7 @@ class BinTreeNode(PyCGAObject):
         return res
 
     @property
-    def rightmost_node(self):
+    def rightmost_node(self) -> BinTreeNode:
         res = self
         while res.right:
             res = res.right
@@ -259,11 +248,11 @@ class BinTreeNode(PyCGAObject):
         return res
     
     @property
-    def balance_factor(self):
+    def balance_factor(self) -> int:
         return (self.right.height if self.right else 0) - (self.left.height if self.left else 0)
 
     @classmethod
-    def copy_contents_without_children(cls, source, destination):
+    def copy_contents_without_children(cls, source: BinTreeNode, destination: BinTreeNode) -> None:
         if not isinstance(source, cls) or not isinstance(destination, cls):
             raise TypeError(f"operands must be of type {cls}")
         if source is destination:
@@ -278,7 +267,7 @@ class BinTreeNode(PyCGAObject):
         source.left, source.right = tmp_source_left, tmp_source_right
         destination.left, destination.right = tmp_dest_left, tmp_dest_right
 
-    def traverse_preorder(self, node=None, nodes=None):
+    def traverse_preorder(self, node: BinTreeNode | None = None, nodes: list[BinTreeNode] | None = None) -> list[BinTreeNode]:
         if node is None:
             node = self
         if nodes is None:
@@ -293,7 +282,7 @@ class BinTreeNode(PyCGAObject):
         
         return nodes
 
-    def traverse_inorder(self, node=None, nodes=None):
+    def traverse_inorder(self, node: BinTreeNode | None = None, nodes: list[BinTreeNode] | None = None) -> list[BinTreeNode]:
         if node is None:
             node = self
         if nodes is None:
@@ -309,7 +298,7 @@ class BinTreeNode(PyCGAObject):
         
         return nodes
 
-    def traverse_postorder(self, node=None, nodes=None):
+    def traverse_postorder(self, node: BinTreeNode | None = None, nodes: list[BinTreeNode] | None = None) -> list[BinTreeNode]:
         if node is None:
             node = self
         if nodes is None:
@@ -323,16 +312,16 @@ class BinTreeNode(PyCGAObject):
         nodes.append(node)
         return nodes
 
-    def set_height(self):
+    def set_height(self) -> None:
         left_height = self.left.height if self.left else 0
         right_height = self.right.height if self.right else 0
         self.height = max(left_height, right_height) + 1 if self.left or self.right else 0        
 
-    def weak_equal(self, other):
+    def weak_equal(self, other: Any) -> bool:
         """Weak (non-recursive) equality that only checks whether the nodes are of the same type and their contents match."""
         return isinstance(other, self.__class__) and self.data == other.data
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         """Strong (recursive) equality that checks whether the nodes are of the same type and their trees are equal."""
         return (
             isinstance(other, self.__class__)
@@ -342,21 +331,22 @@ class BinTreeNode(PyCGAObject):
         )
     
 
-class BinTree(PyCGAObject):
-    node_class = BinTreeNode
+class BinTree(BaseModel):
+    node_class: ClassVar[type] = BinTreeNode
+    root: BinTreeNode
 
     def __init__(self, root):
         self.root = root
     
     @classmethod
-    def from_iterable(cls, iterable):
+    def from_iterable(cls, iterable: Iterable) -> BinTree:
         if isinstance(iterable, Generator):
             iterable = list(iterable)
         
-        return cls(cls._from_iterable(iterable)) if iterable else cls(None)
+        return cls(root=cls._from_iterable(iterable)) if iterable else cls(None)
     
     @classmethod
-    def _from_iterable(cls, iterable, left=0, right=None):
+    def _from_iterable(cls, iterable: Iterable, left: int = 0, right: int | None = None) -> BinTreeNode:
         if right is None:
             right = len(iterable) - 1
         if left > right:
@@ -371,55 +361,52 @@ class BinTree(PyCGAObject):
         return node
     
     @classmethod
-    def empty(cls):
+    def empty(cls) -> BinTree:
         return cls.from_iterable([])
 
-    def traverse_preorder(self):
+    def traverse_preorder(self) -> Iterable[BinTreeNode]:
         return self.root.traverse_preorder() if self.root else []
 
-    def traverse_inorder(self):
+    def traverse_inorder(self) -> Iterable[BinTreeNode]:
         return self.root.traverse_inorder() if self.root else []
     
-    def traverse_postorder(self):
+    def traverse_postorder(self) -> Iterable[BinTreeNode]:
         return self.root.traverse_postorder() if self.root else []
     
-    def leaves_preorder(self):
+    def leaves_preorder(self) -> Iterable[BinTreeNode]:
         return [node for node in self.traverse_preorder() if node.is_leaf]
     
-    def leaves_inorder(self):
+    def leaves_inorder(self) -> Iterable[BinTreeNode]:
         return [node for node in self.traverse_inorder() if node.is_leaf]
     
-    def leaves_postorder(self):
+    def leaves_postorder(self) -> Iterable[BinTreeNode]:
         return [node for node in self.traverse_postorder() if node.is_leaf]
     
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         return isinstance(other, self.__class__) and self.root == other.root
 
 
 class ThreadedBinTreeNode(BinTreeNode):
-    def __init__(self, data, left=None, right=None):
-        super().__init__(data, left, right)
-        self.prev = None
-        self.next = None
-    
-    def __repr__(self):
-        return f"{self.left.data if self.left else ''}<-{self.data}->{self.right.data if self.right else ''}"
+    left: BinTreeNode | None = None
+    right: BinTreeNode | None = None
+    prev: BinTreeNode | None = None
+    next: BinTreeNode | None = None
 
 
 class AVLTree(BinTree):
-    def insert(self, data, starting_node=None):
+    def insert(self, data: Any, starting_node: BinTreeNode | None = None) -> None:
         if starting_node is None:
             starting_node = self.root
 
         self.root = self._insert(data, starting_node)
     
-    def delete(self, data, starting_node=None):
+    def delete(self, data: Any, starting_node: BinTreeNode | None = None) -> None:
         if starting_node is None:
             starting_node = self.root
 
         self.root = self._delete(data, starting_node)
 
-    def _insert(self, data, node=None):
+    def _insert(self, data: Any, node: BinTreeNode | None = None) -> BinTreeNode:
         data_is_node = isinstance(data, self.node_class)
         if node is None:
             return data if data_is_node else BinTreeNode(data)
@@ -433,7 +420,7 @@ class AVLTree(BinTree):
         node.set_height()
         return self.rebalance(node)
 
-    def _delete(self, data, node):
+    def _delete(self, data: Any, node: BinTreeNode | None = None) -> BinTreeNode:
         if node is None:
             return None
         
@@ -458,7 +445,7 @@ class AVLTree(BinTree):
         node.set_height()
         return self.rebalance(node)
     
-    def rebalance(self, node):
+    def rebalance(self, node: BinTreeNode) -> BinTreeNode:
         balance_factor = node.balance_factor
 
         if balance_factor == -2:
@@ -477,7 +464,7 @@ class AVLTree(BinTree):
         # No imbalance
         return node
 
-    def _rotate_left(self, node):
+    def _rotate_left(self, node: BinTreeNode) -> BinTreeNode:
         heavy_node = node.right
         swapped_subnode = heavy_node.left
         heavy_node.left = node
@@ -488,7 +475,7 @@ class AVLTree(BinTree):
 
         return heavy_node
     
-    def _rotate_right(self, node):
+    def _rotate_right(self, node: BinTreeNode) -> BinTreeNode:
         heavy_node = node.left
         swapped_subnode = heavy_node.right
         heavy_node.right = node
@@ -501,10 +488,10 @@ class AVLTree(BinTree):
 
 
 class ThreadedBinTree(AVLTree):
-    node_class = ThreadedBinTreeNode
+    node_class: ClassVar[type] = ThreadedBinTreeNode
 
     @classmethod
-    def from_iterable(cls, iterable, circular=True):
+    def from_iterable(cls, iterable: Iterable[ThreadedBinTreeNode], circular: bool = True) -> ThreadedBinTree:
         tree = super().from_iterable(iterable)
         nodes = tree.traverse_inorder()
         
@@ -517,24 +504,21 @@ class ThreadedBinTree(AVLTree):
             nodes[-1].next = None
         
         return tree
-    
-    def __repr__(self):
-        return ", ".join([repr(node.data) for node in self.traverse_inorder()])
 
 
-class PathDirection(PyCGAObject, str, Enum):
+class PathDirection(str, Enum):
     left = "left"
     right = "right"
 
 
-class PointType(PyCGAObject, Enum):
+class PointType(Enum):
     convex = 0
     reflex = 1
     left_supporting = 2
     right_supporting = 3
 
     @classmethod
-    def by_nodes(cls, source, target):
+    def by_nodes(cls, source: BinTreeNode, target: BinTreeNode) -> PointType:
         if target.prev is None:
             direction = Point.direction(source.data, target.data, target.next.data)
             if source.data.x < target.data.x:
@@ -552,7 +536,7 @@ class PointType(PyCGAObject, Enum):
         return cls.by_points(source.data, target.data, target.prev.data, target.next.data)
 
     @classmethod
-    def by_points(cls, source, target, left, right):
+    def by_points(cls, source: BinTreeNode, target: BinTreeNode, left: BinTreeNode, right: BinTreeNode) -> PointType:
         def polar_angle(point):
             """[0, 2*pi) polar angle in coordinate system with axis target -> source (rotated against x axis by rot)"""
             rot = Point.nonnegative_polar_angle(source, target)
